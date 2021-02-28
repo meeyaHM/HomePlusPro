@@ -18,7 +18,7 @@ Any dev can easily add support to their tweak, and no code is required.
 
 [info for developers here](https://github.com/KritantaDev/HomePlusPro/blob/master/HomePlusEditor/Extensions/README.md)
 
-###### What's missing from this?
+## What's missing from this?
 I've commented explanations for every item in .gitignore, but I'll walk through the major ones here:
 
 * Image assets (the HPResources bundle) These are included in the compiled .deb available on chariz
