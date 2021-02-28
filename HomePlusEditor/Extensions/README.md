@@ -5,5 +5,6 @@
 3. Rename it to "HomePlus.plist"
 
 TODO:
-Require far less stuff to be specified in the Plist
-Handle tweaks that do really weird stuff for prefs
+
+* Require far less stuff to be specified in the Plist
+* Handle tweaks that do really weird stuff for prefs
