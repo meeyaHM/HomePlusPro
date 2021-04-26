@@ -3,6 +3,20 @@
 #define KEY @"HPModifiedIconState"
 #pragma mark Dock BG Handling
 
+
+NSInteger widgetWidth(NSInteger size, NSInteger cols)
+{
+    CGFloat colf = (CGFloat) cols;
+    if (size <= 2)
+        return (NSInteger) (floor(0.5f * colf)); // floor when widget resizing logic is implemented.
+    if (size == 3)
+        return (NSInteger) (floor(0.75f * colf));
+    if (size >= 4)
+        return cols;
+    return size;
+}
+
+
 %hook SBDockView
 
 // This is what we need to hook to hide the dock background cleanly
@@ -74,6 +88,87 @@
 
 %end
 
+
+%hook SBIconListModel 
+
+- (SBIconListModel *)initWithUniqueIdentifier:(id)uid
+                                       folder:(SBFolder *)folder
+                                     gridSize:(SBHIconGridSize)gridSize
+                           gridSizeClassSizes:(SBHIconGridSizeClassSizes)sizes
+
+{
+    if (gridSize.height == -1)
+    {
+            SBHIconGridSizeClassSizes fixedSizes = { .small = { .width = 2, .height = 2 }, .medium = { .width = 4, .height = 2 }, 
+                                    .large = { .width = 4, .height = 4 }, .extralarge = { .width = 4, .height = 6 } };
+        return %orig(uid, folder, gridSize, fixedSizes);
+    }
+    return %orig(uid, folder, gridSize, sizes);
+}
+%end 
+
+%hook SpringBoard
+
+// Honestly this is a bad hack just to get it functional (with not too much overhead).
+// This could be done with a notification listener instead.
+- (BOOL)isShowingHomescreen
+{
+    [HPManager updateCacheForLocation:@"SBIconLocationRoot"];
+    [HPManager updateCacheForLocation:@"SBIconLocationDock"];
+    if (!%orig)
+    {
+        if ([HPManager sharedInstance]._rtHitboxWindow)
+        {
+            [HPManager sharedInstance]._rtHitboxWindow.hidden = YES;
+        }
+    }
+    else 
+    {
+        if ([[[UIDevice currentDevice] systemVersion] floatValue] < 13.0f && [HPManager sharedInstance]._rtIconViewInitialReloadCount < 2)
+        {
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"HPResetIconViews" object:nil];
+        }
+        if ([HPManager sharedInstance]._rtIconViewInitialReloadCount == 2)
+        {
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"HPResetIconViews" object:nil];
+        }
+        [HPManager sharedInstance]._rtIconViewInitialReloadCount += 1;
+        if ([HPManager sharedInstance]._rtHitboxWindow)
+        {
+            [HPManager sharedInstance]._rtHitboxWindow.hidden = NO;
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"HPResetIconViews" object:nil];
+        }
+    }
+    return %orig;
+}
+
+%end
+
+// idk why we're forced to do this
+%hook SBHLibraryCategoriesRootFolder
+
+-(SBHLibraryCategoriesRootFolder *)initWithUniqueIdentifier:(id)arg1 
+                                                displayName:(id)arg2 
+                                               maxListCount:(NSUInteger)arg3 
+                                               listGridSize:(SBHIconGridSize)arg4 
+                                     iconGridSizeClassSizes:(SBHIconGridSizeClassSizes)arg5
+{
+
+    SBHIconGridSizeClassSizes sizes = { .small = { .width = 2, .height = 2 }, .medium = { .width = 4, .height = 2 }, 
+                                    .large = { .width = 4, .height = 4 }, .extralarge = { .width = 4, .height = 6 } };
+
+    return %orig(arg1, arg2, arg3, arg4, sizes);
+}
+
+%end
+
+%hook _SBHLibraryPodIconListView 
+-(CGSize)iconSpacing 
+{
+    return CGSizeMake(27, 35);
+}
+%end
+
 #pragma mark Reload Icon Model
 
 %hook SBIconModel
@@ -91,6 +186,7 @@
 
     return x;
 }
+
 %new 
 - (void)recieveNotification:(NSNotification *)notification
 {

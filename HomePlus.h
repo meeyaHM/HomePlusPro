@@ -132,6 +132,7 @@ typedef struct SBHIconGridSizeClassSizes {
 @property (nonatomic, retain) SBIconViewMap *iconViewMap;
 @property (nonatomic, retain) SBRootFolderView *contentView;
 -(id)currentIconListView;
+-(NSArray *)iconListViews;
 - (BOOL)isSidebarPinned;
 - (BOOL)isSidebarVisible;
 @property (getter=isSidebarEffectivelyVisible,nonatomic,readonly) BOOL sidebarEffectivelyVisible;
@@ -330,6 +331,7 @@ typedef struct SBHIconGridSizeClassSizes {
 
 
 @interface SBIconListView (HomePlus)
+-(void)setIconSpacing:(CGSize)size;
 @end
 
 @interface SBFolderController : NSObject
@@ -342,11 +344,19 @@ typedef struct SBHIconGridSizeClassSizes {
 @interface SBHIconManager : NSObject 
 @property (nonatomic, retain) SBHDefaultIconListLayoutProvider *listLayoutProvider;
 @end
+
+@interface SBHLibraryPodFolderController : UIViewController
+-(SBIconListView *)currentIconListView;
+@end
+@interface SBHLibraryViewController : UIViewController 
+- (SBHLibraryPodFolderController *)_podFolderViewController;
+@end
 @interface SBIconController : UIViewController
 + (SBIconController *)sharedInstance;
 - (SBFolderController *)_openFolderController;
 - (SBRootFolderController *)_rootFolderController;
 - (SBHIconManager *)iconManager;
+- (SBHLibraryViewController *)_libraryViewController;
 @end
 
 @interface SBFloatingDockView : UIView

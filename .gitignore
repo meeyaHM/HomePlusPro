@@ -40,3 +40,6 @@ homepluspro/
 # The tweak probably can't run from this source code without it, but having the open source code be buildable *is* an end goal of mine.
 
 HomePlus.x
+
+# Repo assets
+repo/

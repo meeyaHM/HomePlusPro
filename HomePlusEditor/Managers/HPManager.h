@@ -56,6 +56,11 @@
 - (instancetype)init;
 
 +(void)updateCacheForLocation:(NSString *)iconLocation;
+
+
+-(void)layoutIconViews;
+
+-(void)layoutIconViewsAnimated;
 @end
 
 #endif

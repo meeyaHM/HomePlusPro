@@ -169,7 +169,7 @@
         [[HPDataManager sharedInstance] loadConfigurationWithName:name];
         [[NSNotificationCenter defaultCenter] postNotificationName:@"HPResetIconViews" object:nil];
         [[NSNotificationCenter defaultCenter] postNotificationName:@"HPUpdateLayoutCache" object:nil];
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"HPLayoutIconViews" object:nil];
+        [[HPManager sharedInstance] layoutIconViews];
         [[[HPEditorManager sharedInstance] editorViewController] reload];
         [self.table reloadData];
     }
@@ -197,7 +197,7 @@
             [[HPDataManager sharedInstance] loadConfigurationWithName:@"Default"];
             [[NSNotificationCenter defaultCenter] postNotificationName:@"HPResetIconViews" object:nil];
             [[NSNotificationCenter defaultCenter] postNotificationName:@"HPUpdateLayoutCache" object:nil];
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"HPLayoutIconViews" object:nil];
+            [[HPManager sharedInstance] layoutIconViews];
             [[[HPEditorManager sharedInstance] editorViewController] reload];
         }
         [((HPConfiguration *) [[HPDataManager sharedInstance] savedConfigurations][(NSUInteger) indexPath.row]) delete];
@@ -226,7 +226,7 @@
 
     [[NSNotificationCenter defaultCenter] postNotificationName:@"HPResetIconViews" object:nil];
     [[NSNotificationCenter defaultCenter] postNotificationName:@"HPUpdateLayoutCache" object:nil];
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"HPLayoutIconViews" object:nil];
+    [[HPManager sharedInstance] layoutIconViews];
     [[[HPEditorManager sharedInstance] editorViewController] reload];
 }
 

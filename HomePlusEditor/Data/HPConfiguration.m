@@ -55,7 +55,7 @@
 {
     NSString *location = @"Root";
     NSString *name = @"Default";
-    NSString *prefix = [NSString stringWithFormat:@"%@%@", @"HPTheme", name];
+    NSString *prefix = @"HPData";
 
 
     [self setInteger:0
@@ -72,7 +72,7 @@
     [self setBool:NO
                     forKey:[NSString stringWithFormat:@"%@%@", prefix, @"ModernDock"]];
 
-    prefix = [NSString stringWithFormat:@"%@%@%@", @"HPTheme", name, location];
+    prefix = [NSString stringWithFormat:@"%@%@", @"HPData", location];
     [self setInteger:4
                     forKey:[NSString stringWithFormat:@"%@%@", prefix, @"Columns"]];
     [self setInteger:[HPUtility defaultRows]
@@ -92,7 +92,7 @@
 
     
     location = @"RootWithSidebar";
-    prefix = [NSString stringWithFormat:@"%@%@%@", @"HPTheme", name, location];
+    prefix = [NSString stringWithFormat:@"%@%@", @"HPData", location];
     [self setInteger:4
                     forKey:[NSString stringWithFormat:@"%@%@", prefix, @"Columns"]];
     [self setInteger:[HPUtility defaultRows]
@@ -112,7 +112,7 @@
     
 
     location = @"RootLandscape";
-    prefix = [NSString stringWithFormat:@"%@%@%@", @"HPTheme", name, location];
+    prefix = [NSString stringWithFormat:@"%@%@", @"HPData", location];
     [self setInteger:[HPUtility defaultRows]
                     forKey:[NSString stringWithFormat:@"%@%@", prefix, @"Columns"]];
     [self setInteger:4
@@ -133,7 +133,7 @@
 
     
     location = @"RootWithSidebarLandscape";
-    prefix = [NSString stringWithFormat:@"%@%@%@", @"HPTheme", name, location];
+    prefix = [NSString stringWithFormat:@"%@%@", @"HPData", location];
     [self setInteger:[HPUtility defaultRows]
                     forKey:[NSString stringWithFormat:@"%@%@", prefix, @"Columns"]];
     [self setInteger:4
@@ -152,7 +152,7 @@
                     forKey:[NSString stringWithFormat:@"%@%@", prefix, @"IconAlpha"]];
 
     location = @"Dock";
-    prefix = [NSString stringWithFormat:@"%@%@%@", @"HPTheme", name, location];
+    prefix = [NSString stringWithFormat:@"%@%@", @"HPData", location];
     [self setInteger:4.0
                     forKey:[NSString stringWithFormat:@"%@%@", prefix, @"Columns"]];
     [self setInteger:1.0
@@ -171,7 +171,7 @@
                     forKey:[NSString stringWithFormat:@"%@%@", prefix, @"IconAlpha"]];
     
     location = @"Folder";
-    prefix = [NSString stringWithFormat:@"%@%@%@", @"HPTheme", name, location];
+    prefix = [NSString stringWithFormat:@"%@%@", @"HPData", location];
     [self setInteger:3 // THIS NEEDS TO BE SET BECAUSE FOLDERS ARE ACTUALLY MODIFIED BY THE TWEAK
                             // FOLDERS WILL CRASH SB IF MODIFIED TILL I ACTUALLY WRITE A PROPER IMPLEMENTATION
                     forKey:[NSString stringWithFormat:@"%@%@", prefix, @"Columns"]];

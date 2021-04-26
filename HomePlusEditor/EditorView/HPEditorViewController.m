@@ -649,14 +649,7 @@ const CGFloat TABLE_HEADER_HEIGHT = 0.458;
 
 - (void)layoutAllSpringboardIcons
 {
-    for (SBRootIconListView *view in self.rootIconListViewsToUpdate)
-    {
-        [view layoutIconsNow];
-        for (UIView *icon in [view allSubviews])
-        {
-            [icon layoutSubviews];
-        }
-    }
+    
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size

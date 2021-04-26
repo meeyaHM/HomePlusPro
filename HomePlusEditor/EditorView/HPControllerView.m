@@ -219,14 +219,14 @@ Properties:
     // Mainly stubs for subclasses. If they need this they can call super (most if not all need it)
     
     [HPManager updateCacheForLocation:[[HPEditorManager sharedInstance] editingLocation]];
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"HPLayoutIconViews" object:nil];
+    [[HPManager sharedInstance] layoutIconViews];
 }
 
 - (void)bottomSliderUpdated:(UISlider *)slider
 {
     
     [HPManager updateCacheForLocation:[[HPEditorManager sharedInstance] editingLocation]];
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"HPLayoutIconViews" object:nil];
+    [[HPManager sharedInstance] layoutIconViews];
 }
 
 #pragma mark Text Fields

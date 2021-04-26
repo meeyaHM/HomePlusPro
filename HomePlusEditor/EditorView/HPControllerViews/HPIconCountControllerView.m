@@ -163,7 +163,7 @@
 
     [[[HPDataManager sharedInstance] currentConfiguration] setFloat:sender.value
                                                              forKey:[NSString stringWithFormat:@"HPData%@%@", x, @"Columns"]];
-    if ([x isEqualToString:@"Dock"]) [[NSNotificationCenter defaultCenter] postNotificationName:@"HPLayoutIconViewsAnimated" object:nil];
+    [[HPManager sharedInstance] layoutIconViewsAnimated];
 
     [HPManager updateCacheForLocation:[[HPEditorManager sharedInstance] editingLocation]];
     [[NSNotificationCenter defaultCenter] postNotificationName:@"HPResetIconViews" object:nil];

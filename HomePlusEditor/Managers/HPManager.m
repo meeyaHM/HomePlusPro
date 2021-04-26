@@ -10,6 +10,11 @@
 
 #include "HPManager.h"
 
+#define kListLayoutProvider [[[objc_getClass("SBIconController") sharedInstance] iconManager] listLayoutProvider]
+#define kRootFolderController [[objc_getClass("SBIconController") sharedInstance] _rootFolderController]
+#define ConfigForLocation(location) [[kListLayoutProvider layoutForIconLocation:location] layoutConfiguration]
+#define kAppLibraryIconListView [[[[objc_getClass("SBIconController") sharedInstance] _libraryViewController] _podFolderViewController] currentIconListView]
+#define kIconModelDidLayoutNotification @"SBIconModelWillLayoutIconStateNotification"
 
 NSInteger widgetWidth(NSInteger size, NSInteger cols)
 {
@@ -39,6 +44,8 @@ NSInteger widgetWidth(NSInteger size, NSInteger cols)
     self = [super init];
 
     if (self) {
+
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(initializeCacheOverride) name:kIconModelDidLayoutNotification object:nil];
 
         // Preference globals
         self._pfTweakEnabled = YES;
@@ -76,43 +83,93 @@ NSInteger widgetWidth(NSInteger size, NSInteger cols)
     return self;
 }
 
+-(void)initializeCacheOverride
+{
+    [HPManager updateCacheForLocation:@"SBIconLocationRoot"];
+    [HPManager updateCacheForLocation:@"SBIconLocationDock"];
+    [self layoutIconViews];
+}
+
 +(void)updateCacheForLocation:(NSString *)iconLocation
 {
-    if ([iconLocation isEqualToString:@"SBIconLocationTodayView"])
-    return;
+    // Remove "SBIconLocation" from the iconLocation variable, 
+    //      so we just get "Root" or "Dock"
     NSString *loc = [iconLocation substringFromIndex:14];
-    SBIconListGridLayoutConfiguration *config = [[[[[objc_getClass("SBIconController") sharedInstance] iconManager] listLayoutProvider] layoutForIconLocation:iconLocation] layoutConfiguration];
+    
+    // We're going to use a static dictionary to hold our original configs here, for referencing the 'default' values.
     static NSMutableDictionary *originalConfigs = nil;
+    SBIconListGridLayoutConfiguration *config = ConfigForLocation(iconLocation);
+    
     if (!originalConfigs)
         originalConfigs = [NSMutableDictionary new];
-
     if (!originalConfigs[iconLocation]) 
+        // Store a copy, we're going to change the original object.
         originalConfigs[iconLocation] = [config copy];
     
+    // Set columns and rows here.
+    NSInteger loadoutValueColumns = GetLoadoutValue(loc, @"Columns");
     [config setNumberOfPortraitColumns:GetLoadoutValue(loc, @"Columns")];
     [config setNumberOfPortraitRows:GetLoadoutValue(loc, @"Rows")];
+    
+    // This set of code is iOS 14 Widget/Applist specific
     if (@available(iOS 14, *))
     {
-        SBHIconGridSizeClassSizes sizes = { .small = { .width = widgetWidth(2, GetLoadoutValue(loc, @"Columns")), .height = 2 }, 
-                                    .medium = { .width = widgetWidth(4, GetLoadoutValue(loc, @"Columns")), .height = 2 }, 
-                                    .large = { .width = widgetWidth(4,  GetLoadoutValue(loc, @"Columns")), .height = 6 }, 
-                                    .extralarge = { .width = widgetWidth(4,  GetLoadoutValue(loc, @"Columns")), .height = 6 } };
+        // These defaults may be screwed up. Do check them.
+        SBHIconGridSizeClassSizes sizes = { .small = { .width = widgetWidth(2, loadoutValueColumns), .height = 2 }, 
+                                    .medium = { .width = widgetWidth(4, loadoutValueColumns), .height = 2 }, 
+                                    .large = { .width = widgetWidth(4, loadoutValueColumns), .height = 6 }, 
+                                    .extralarge = { .width = widgetWidth(4, loadoutValueColumns), .height = 6 } };
         [config setIconGridSizeClassSizes:sizes]; 
+        // Applist does something weird regarding Root Location columns and grid settings
+        // This appears to fix it. It still looks, off.
+        if ([loc isEqualToString:@"Root"])
+        {
+        }
     }
-    UIEdgeInsets x = [originalConfigs[iconLocation] portraitLayoutInsets];
-    UIEdgeInsets y;
-    CGFloat leftinset = GetLoadoutValue(loc, @"LeftInset")?:0;
-    if (!((!leftinset) == 0))
-        leftinset = (x.left) + (GetLoadoutValue(loc, @"SideInset")?:0)*-2;
     
-    y = UIEdgeInsetsMake(
-        x.top + (GetLoadoutValue(loc, @"TopInset")?:0),
-        leftinset,
-        x.bottom - (GetLoadoutValue(loc, @"TopInset")?:0) + (GetLoadoutValue(loc, @"VerticalSpacing")?:0) *-2, // * 2 because regularly it was too slow
-        x.right - (GetLoadoutValue(loc, @"LeftInset")?:0) + (GetLoadoutValue(loc, @"SideInset")?:0) *-2
+    // set top/bottom/left/right insets (for portrait).
+    UIEdgeInsets originalInsets = [originalConfigs[iconLocation] portraitLayoutInsets];
+    UIEdgeInsets calculatedInsets;
+    
+    CGFloat calculatedLeftInset = GetLoadoutValue(loc, @"HorizontalSpacing")?:0; 
+    CGFloat additionalHorizontalSpacing = calculatedLeftInset;
+    CGFloat additionalTopInset = GetLoadoutValue(loc, @"TopInset")?:0;
+    
+    if (!((!calculatedLeftInset) == 0)) // this is homeplus specific left-inset behavior that feels more intuitive
+                              // if left-inset is 0, it'll center the icons like it naturally does.
+        calculatedLeftInset = (originalInsets.left) + (additionalHorizontalSpacing)*-2;
+    
+    calculatedInsets = UIEdgeInsetsMake(
+        originalInsets.top + additionalTopInset,
+        calculatedLeftInset,
+        // *2 is because regularly it was too slow. 
+        // negative on the others bc vertical spacing is created by Top and Bottom inset.
+        //     we dont actually give the user 'bottom inset' config, just 'top' and 'vertical spacing'.
+        //     increasing vertical spacing increases how far we want to move it "down" from the top inset
+        //     so, -2 is what we multiply vertical spacing by 
+        originalInsets.bottom - (additionalTopInset) + (GetLoadoutValue(loc, @"VerticalSpacing")?:0) *-2, 
+        originalInsets.right - (GetLoadoutValue(loc, @"LeftInset")?:0) + (additionalHorizontalSpacing) *-2
     );
 
-    config.portraitLayoutInsets = y;
+    config.portraitLayoutInsets = calculatedInsets;
+}
+
+-(void)layoutIconViews
+{
+    for (SBIconListView *list in [kRootFolderController iconListViews])
+    {
+        [list layoutIconsNow];
+    }
+}
+
+-(void)layoutIconViewsAnimated
+{
+    for (SBIconListView *list in [kRootFolderController iconListViews])
+    {    
+        [UIView animateWithDuration:(0.15) delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            [list layoutIconsNow];
+        } completion:NULL];
+    }
 }
 
 @end

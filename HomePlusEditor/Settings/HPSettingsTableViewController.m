@@ -276,14 +276,10 @@ NSArray *getCells();
 
     [[NSNotificationCenter defaultCenter] postNotificationName:@"HPResetIconViews" object:nil];
     [[NSNotificationCenter defaultCenter] postNotificationName:@"HPUpdateLayoutCache" object:nil];
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"HPLayoutIconViews" object:nil];
+    [[HPManager sharedInstance] layoutIconViews];
     for (SBRootIconListView *view in [[HPEditorManager sharedInstance] editorViewController].rootIconListViewsToUpdate)
     {
         [view layoutIconsNow];
-        for (UIView *icon in [view allSubviews])
-        {
-            [icon layoutSubviews];
-        }
     }
 }
 
@@ -314,7 +310,7 @@ NSArray *getCells();
                                                     [[[HPDataManager sharedInstance] currentConfiguration] writeDefaults];
                                                     [[NSNotificationCenter defaultCenter] postNotificationName:@"HPResetIconViews" object:nil];
                                                     [[NSNotificationCenter defaultCenter] postNotificationName:@"HPUpdateLayoutCache" object:nil];
-                                                    [[NSNotificationCenter defaultCenter] postNotificationName:@"HPLayoutIconViews" object:nil];
+                                                    [[HPManager sharedInstance] layoutIconViews];
                                                     [[[HPEditorManager sharedInstance] editorViewController] reload];
                                                 }];
 
